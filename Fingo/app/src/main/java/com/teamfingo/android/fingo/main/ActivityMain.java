@@ -11,11 +11,14 @@ import android.view.MenuInflater;
 import android.widget.RelativeLayout;
 
 import com.teamfingo.android.fingo.R;
-import com.teamfingo.android.fingo.utils.FingoPreferences;
 import com.teamfingo.android.fingo.category.FragmentCategory;
 import com.teamfingo.android.fingo.home.FragmentHome;
 import com.teamfingo.android.fingo.mypage.FragmentMyPage;
 import com.teamfingo.android.fingo.recommend.FragmentRecommend;
+import com.teamfingo.android.fingo.utils.FingoPreferences;
+
+import static com.teamfingo.android.fingo.R.anim.abc_popup_enter;
+import static com.teamfingo.android.fingo.R.anim.abc_popup_exit;
 
 public class ActivityMain extends AppCompatActivity {
 
@@ -94,7 +97,10 @@ public class ActivityMain extends AppCompatActivity {
         Log.d("aaaa", "aaaa");
 
         FragmentManager fragmentManager = getSupportFragmentManager();
-        android.support.v4.app.FragmentTransaction transaction = fragmentManager.beginTransaction().addToBackStack(null);
+        android.support.v4.app.FragmentTransaction transaction = fragmentManager.beginTransaction();
+
+        transaction.addToBackStack(null);
+//        transaction.setCustomAnimations(abc_popup_enter, abc_popup_exit);
         transaction.replace(R.id.container, fragment);
         transaction.commit();
     }

@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -20,28 +21,34 @@ import com.facebook.GraphResponse;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.teamfingo.android.fingo.R;
+import com.teamfingo.android.fingo.interfaces.FingoService;
 import com.teamfingo.android.fingo.main.ActivityMain;
+import com.teamfingo.android.fingo.model.FingoAccessToken;
 
 import org.json.JSONObject;
 
 import java.util.Arrays;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
 
 /**
- *
  * 작성자 : 김태원
  * 소속 : fastcampus
  * 작성일 : 2016-11-28
- *
+ * <p>
  * == Fragment Login Main ==
- *
+ * <p>
  * 로그인의 메인화면 역할을 한다.
- *
+ * <p>
  * 기존사용자의 로그인과 신규회원의 회원가입화면으로 이동시켜준다.
- *
  */
 
-public class FragmentLoginMain extends Fragment implements View.OnClickListener{
+public class FragmentLoginMain extends Fragment implements View.OnClickListener {
 
     Button btnLogIn;
     Button btnEmailSignUp;
@@ -49,9 +56,13 @@ public class FragmentLoginMain extends Fragment implements View.OnClickListener{
 
     Fragment fragmentLogin;
     Fragment fragmentEmailSignUp;
-    Fragment fragmentFacebookSignUp;
 
     CallbackManager mCallbackManager;
+
+    private String BASE_URL = "http://fingo-dev.ap-northeast-2.elasticbeanstalk.com/";
+    private String facebook_token;
+    private String fingo_token;
+
 
     public FragmentLoginMain() {
         // Required empty public constructor
@@ -72,15 +83,14 @@ public class FragmentLoginMain extends Fragment implements View.OnClickListener{
 
         fragmentLogin = new FragmentLogin();
         fragmentEmailSignUp = new FragmentEmailSignUp();
-        fragmentFacebookSignUp = new FragmentFacebookSignUp();
 
-        btnLogIn = (Button)view.findViewById(R.id.button_login);
+        btnLogIn = (Button) view.findViewById(R.id.button_login);
         btnLogIn.setOnClickListener(this);
 
-        btnEmailSignUp = (Button)view.findViewById(R.id.button_email_sign_up);
+        btnEmailSignUp = (Button) view.findViewById(R.id.button_email_sign_up);
         btnEmailSignUp.setOnClickListener(this);
 
-        btnFacebookSigUp = (Button)view.findViewById(R.id.button_facebook_sign_up);
+        btnFacebookSigUp = (Button) view.findViewById(R.id.button_facebook_sign_up);
         btnFacebookSigUp.setOnClickListener(this);
 
         return view;
@@ -88,7 +98,7 @@ public class FragmentLoginMain extends Fragment implements View.OnClickListener{
 
     @Override
     public void onClick(View v) {
-        switch(v.getId()){
+        switch (v.getId()) {
 
             case R.id.button_login:
                 replaceFragment(fragmentLogin);
@@ -118,7 +128,7 @@ public class FragmentLoginMain extends Fragment implements View.OnClickListener{
         transaction.commit();
     }
 
-    public void facebookLoginOnClick(){
+    public void facebookLoginOnClick() {
 
         LoginManager.getInstance().logInWithReadPermissions(this, Arrays.asList("public_profile", "email"));
         LoginManager.getInstance().registerCallback(mCallbackManager, new FacebookCallback<LoginResult>() {
@@ -134,15 +144,14 @@ public class FragmentLoginMain extends Fragment implements View.OnClickListener{
                         if (response.getError() != null) {
 
                         } else {
-                            Log.i("TAG", "user: " + user.toString());
-                            Log.i("TAG", "AccessToken: " + result.getAccessToken().getToken());
+
+                            facebook_token = result.getAccessToken().getToken();
+
+                            Log.i("Facebook_User_Check", "user: " + user.toString());
+                            Log.i("Facebook_User_Check", "AccessToken: " + facebook_token);
 //                            setResult(RESULT_OK);
 
-                            Intent intent = new Intent(getActivity(), ActivityMain.class);
-                            startActivity(intent);
-
-                            // TODO 현재 프레그먼트가 속한 ActivityLogin 에서 ActivitiyMain 으로 이동 한 뒤에 현재 Activity 를 닫아 줄 수 있도록 구현 해야함.
-//                            finish();
+                            callFingoAPI();
                         }
                     }
                 });
@@ -165,5 +174,42 @@ public class FragmentLoginMain extends Fragment implements View.OnClickListener{
                 //finish();
             }
         });
+    }
+
+    private void callFingoAPI() {
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(BASE_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        FingoService fingoService = retrofit.create(FingoService.class);
+        Call<FingoAccessToken> fingoAccessTokenCall = fingoService.userFacebookLogin(facebook_token);
+
+        // TODO 이미 존재하는 회원 인지를 체크하는 로직 필요 - 부분적으로 해결!
+        // TODO Rx를 이용해 실시간으로 valid 여부 체크!
+
+        fingoAccessTokenCall.enqueue(new Callback<FingoAccessToken>() {
+            @Override
+            public void onResponse(Call<FingoAccessToken> call, Response<FingoAccessToken> response) {
+                if (response.isSuccessful()) {
+
+                    fingo_token = response.body().getToken();
+                    Log.e("CHECK TOKEN", ">>>>>>>>" + fingo_token);
+
+                    Intent intent = new Intent(getActivity(), ActivityMain.class);
+                    startActivity(intent);
+
+                } else
+                    // TODO 어떤 정보의 중복으로 인해 회원가입이 되지 않는것인지 출력되는 메세지 세분화가 필요
+                    Toast.makeText(getContext(), response.message(), Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onFailure(Call<FingoAccessToken> call, Throwable t) {
+                t.printStackTrace();
+            }
+        });
+
     }
 }

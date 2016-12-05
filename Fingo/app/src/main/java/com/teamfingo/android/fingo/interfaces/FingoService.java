@@ -47,4 +47,9 @@ public interface FingoService {
     @GET("/api/v1.0/movie/search/")
     Call<SearchList> getSearchList(@Header("Authorization") String authorization, @Query("q")String q);
 
+    // facebook login
+    @FormUrlEncoded
+    @POST("/api/v1.0/user/fb_login/")
+    Call<FingoAccessToken> userFacebookLogin(@Field("access_token") String facebook_access_token);
+
 }
