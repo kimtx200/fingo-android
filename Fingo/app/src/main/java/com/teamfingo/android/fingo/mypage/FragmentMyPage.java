@@ -8,14 +8,19 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import com.bumptech.glide.Glide;
 import com.teamfingo.android.fingo.R;
 import com.teamfingo.android.fingo.utils.FingoPreferences;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 
 public class FragmentMyPage extends Fragment {
 
     Button btnFacebookLogout;
     Button btnLogout;
+
+    CircleImageView civProfile;
 
     private String BASE_URL = "http://eb-fingo-real.ap-northeast-2.elasticbeanstalk.com/";
     private FingoPreferences mPref;
@@ -31,6 +36,9 @@ public class FragmentMyPage extends Fragment {
 
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_my_page, container, false);
+
+        civProfile = (CircleImageView) view.findViewById(R.id.imageView_profile);
+        Glide.with(getContext()).load(R.drawable.shutterstock_157248584).into(civProfile);
 
 //        btnFacebookLogout = (Button) view.findViewById(R.id.button_facebook_logout);
 //        btnFacebookLogout.setOnClickListener(new View.OnClickListener() {
