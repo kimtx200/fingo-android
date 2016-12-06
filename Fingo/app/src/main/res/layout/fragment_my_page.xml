@@ -1,23 +1,28 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.teamfingo.android.fingo.mypage.FragmentMyPage">
 
 
-    <Button
-        android:text="Facebook LogOut Test"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/button_facebook_logout"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true" />
+    <ImageView
+        android:layout_width="match_parent"
+        app:srcCompat="@drawable/objet_dynamique_vectoriel"
+        android:id="@+id/imageView4"
+        android:scaleType="fitStart"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_height="280dp" />
 
-    <Button
-        android:text="Logout"
+    <view
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/button_facebook_logout"
+        class="de.hdodenhof.circleimageview.CircleImageView"
+        android:layout_alignBottom="@+id/imageView4"
         android:layout_centerHorizontal="true"
-        android:id="@+id/button_logout" />
+        android:layout_marginBottom="120dp"
+        android:id="@+id/imageView_profile" />
+
 </RelativeLayout>
