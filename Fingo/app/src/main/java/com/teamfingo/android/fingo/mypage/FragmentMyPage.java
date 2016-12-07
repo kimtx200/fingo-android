@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 
 import com.bumptech.glide.Glide;
+import com.facebook.login.LoginManager;
 import com.teamfingo.android.fingo.R;
 import com.teamfingo.android.fingo.utils.FingoPreferences;
 
@@ -36,6 +37,8 @@ public class FragmentMyPage extends Fragment {
 
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_my_page, container, false);
+
+        LoginManager.getInstance().logOut();
 
         civProfile = (CircleImageView) view.findViewById(R.id.imageView_profile);
         Glide.with(getContext()).load(R.drawable.shutterstock_157248584).into(civProfile);
