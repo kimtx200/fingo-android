@@ -24,6 +24,7 @@ import com.teamfingo.android.fingo.R;
 import com.teamfingo.android.fingo.interfaces.FingoService;
 import com.teamfingo.android.fingo.main.ActivityMain;
 import com.teamfingo.android.fingo.model.FingoAccessToken;
+import com.teamfingo.android.fingo.utils.FingoPreferences;
 
 import org.json.JSONObject;
 
@@ -63,6 +64,7 @@ public class FragmentLoginMain extends Fragment implements View.OnClickListener 
     private String facebook_token;
     private String fingo_token;
 
+    FingoPreferences pref;
 
     public FragmentLoginMain() {
         // Required empty public constructor
@@ -196,6 +198,9 @@ public class FragmentLoginMain extends Fragment implements View.OnClickListener 
 
                     fingo_token = response.body().getToken();
                     Log.e("CHECK TOKEN", ">>>>>>>>" + fingo_token);
+
+                    pref = new FingoPreferences(getContext());
+                    pref.setAccessToken(fingo_token);
 
                     Intent intent = new Intent(getActivity(), ActivityMain.class);
                     startActivity(intent);
