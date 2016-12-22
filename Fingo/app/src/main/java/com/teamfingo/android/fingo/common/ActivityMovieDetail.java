@@ -1,13 +1,18 @@
 package com.teamfingo.android.fingo.common;
 
 import android.content.DialogInterface;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.net.Uri;
+import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -19,14 +24,20 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.facebook.CallbackManager;
+import com.facebook.FacebookSdk;
+import com.facebook.share.model.ShareLinkContent;
+import com.facebook.share.widget.ShareDialog;
 import com.teamfingo.android.fingo.R;
 import com.teamfingo.android.fingo.model.Movie;
 import com.teamfingo.android.fingo.model.MovieComment;
 import com.teamfingo.android.fingo.model.MovieScore;
 import com.teamfingo.android.fingo.model.MovieWish;
+import com.teamfingo.android.fingo.model.Person;
 import com.teamfingo.android.fingo.utils.AppController;
 
-import de.hdodenhof.circleimageview.CircleImageView;
+import java.util.ArrayList;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -40,7 +51,7 @@ public class ActivityMovieDetail extends AppCompatActivity implements View.OnCli
     Button btnWishMovie, btnRate, btnComment, btnShare;
     TextView tvMovieDate, tvMovieGenre, tvMovieStory;
     //ImageView ivStillCut1, ivStillCut2, ivStillCut3, ivStillCut4, ivStillCut5;
-    LinearLayout llStillCut, llDirectorandActor;
+    LinearLayout llStillCut, llDirectorandActor, llMoreStory;
 
     LinearLayout.LayoutParams mLayoutParams;
 
@@ -56,6 +67,10 @@ public class ActivityMovieDetail extends AppCompatActivity implements View.OnCli
     TextView tvMovieTitleComment;
     RatingBar rbRatedScore;
     EditText etComment;
+    RecyclerView mRecyclerViewDirectorAndActor;
+
+    RecyclerAdapterDirectorAndActor mRecyclerAdpaterDirectorAndActor;
+    ArrayList<Person> mDirectorAndActor = new ArrayList<>();
 
     String movieId; // 특정 영화의 id
 
@@ -63,7 +78,11 @@ public class ActivityMovieDetail extends AppCompatActivity implements View.OnCli
     String score;
     String comment;
     String ratedScore;
+    Movie mMovie;
 
+    // facebook 공유
+    private ShareDialog shareDialog;
+    private CallbackManager facebookCllbackManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,7 +95,6 @@ public class ActivityMovieDetail extends AppCompatActivity implements View.OnCli
 
         // Movie Detail 화면 초기화
         initMovieDetailView();
-
         loadData();
 
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -86,6 +104,28 @@ public class ActivityMovieDetail extends AppCompatActivity implements View.OnCli
                 mSwipeRefreshLayout.setRefreshing(false);
             }
         });
+
+        llMoreStory.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                tvMovieStory.setMaxLines(Integer.MAX_VALUE);
+                llMoreStory.setVisibility(View.GONE);
+            }
+        });
+
+        mRecyclerAdpaterDirectorAndActor = new RecyclerAdapterDirectorAndActor(
+                this, mDirectorAndActor, R.layout.item_person
+        );
+
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+        mRecyclerViewDirectorAndActor.setAdapter(mRecyclerAdpaterDirectorAndActor);
+        mRecyclerViewDirectorAndActor.setLayoutManager(layoutManager);
+
+        // facebook 공유
+        FacebookSdk.sdkInitialize(getApplicationContext());
+        facebookCllbackManager = CallbackManager.Factory.create();
+        shareDialog = new ShareDialog(this);
+
     }
 
     public void initMovieDetailView() {
@@ -102,6 +142,8 @@ public class ActivityMovieDetail extends AppCompatActivity implements View.OnCli
         tvMovieStory = (TextView) findViewById(R.id.textView_story);
         llStillCut = (LinearLayout) findViewById(R.id.linearLayout_stillCut);
         llDirectorandActor = (LinearLayout) findViewById(R.id.linearLayout_director_and_actor);
+        llMoreStory = (LinearLayout) findViewById(R.id.linearLayoutMore);
+        mRecyclerViewDirectorAndActor = (RecyclerView) findViewById(R.id.recyclerView_director_and_actor);
     }
 
     public void loadData() {
@@ -113,9 +155,9 @@ public class ActivityMovieDetail extends AppCompatActivity implements View.OnCli
             @Override
             public void onResponse(Call<Movie> call, Response<Movie> response) {
                 if (response.isSuccessful()) {
-                    Movie movie = response.body();
+                    mMovie = response.body();
 
-                    Movie.Stillcut[] stillCutImg = movie.getStillcut();
+                    Movie.Stillcut[] stillCutImg = mMovie.getStillcut();
                     if (stillCutImg.length == 0) { // 스틸컷이 하나도 없을 때
                         ivMovieBackgroundStillCut.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
                         ivMovieBackgroundStillCut.setColorFilter(Color.parseColor("#BDBDBD"), PorterDuff.Mode.MULTIPLY);
@@ -125,21 +167,23 @@ public class ActivityMovieDetail extends AppCompatActivity implements View.OnCli
                         ivMovieBackgroundStillCut.setColorFilter(Color.parseColor("#BDBDBD"), PorterDuff.Mode.MULTIPLY);
                     }
 
-                    Glide.with(ActivityMovieDetail.this).load(movie.getImg()).into(ivMoviePoster);
-                    tvMovieTitle.setText(movie.getTitle());
-                    tvMovieScore.setText(getString(R.string.average_score) + "  " + movie.getScore());
+                    Glide.with(ActivityMovieDetail.this).load(mMovie.getImg()).into(ivMoviePoster);
+                    tvMovieTitle.setText(mMovie.getTitle());
+                    tvMovieScore.setText(getString(R.string.average_score) + "  " + mMovie.getScore());
 
                     btnWishMovie.setOnClickListener(ActivityMovieDetail.this);
                     btnRate.setOnClickListener(ActivityMovieDetail.this);
                     btnComment.setOnClickListener(ActivityMovieDetail.this);
                     btnShare.setOnClickListener(ActivityMovieDetail.this);
 
-                    tvMovieDate.setText(getString(R.string.date) + " " + movie.getFirst_run_date());
-                    Movie.Genre[] genre = movie.getGenre();
+                    tvMovieDate.setText(getString(R.string.date) + " " + mMovie.getFirst_run_date());
+                    Movie.Genre[] genre = mMovie.getGenre();
                     tvMovieGenre.setText(getString(R.string.genre) + " " + genre[0]);
-                    tvMovieStory.setText(movie.getStory());
+                    tvMovieStory.setText(mMovie.getStory());
 
-                    mLayoutParams = new LinearLayout.LayoutParams(500, 300);
+                    Resources r = getResources();
+                    float height = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 130, r.getDisplayMetrics());
+                    mLayoutParams = new LinearLayout.LayoutParams((int)(height * 1.77), (int)height);
                     if (stillCutImg.length == 0) {
 
                     } else {
@@ -154,24 +198,19 @@ public class ActivityMovieDetail extends AppCompatActivity implements View.OnCli
                         }
                     }
 
-                    Movie.Director[] directors = movie.getDirector();
-                    Movie.Actors[] actors = movie.getActors();
-                    mLayoutParams = new LinearLayout.LayoutParams(200, 200);
+                    Movie.Director[] directors = mMovie.getDirector();
+                    Movie.Actors[] actors = mMovie.getActors();
 
                     for (int i=0; i<directors.length; i++) {
-                        CircleImageView civ = new CircleImageView(ActivityMovieDetail.this);
-                        Glide.with(ActivityMovieDetail.this).load(directors[i].getImg()).into(civ);
-                        civ.setLayoutParams(mLayoutParams);
-                        mLayoutParams.setMargins(40,0,40,0);
-                        llDirectorandActor.addView(civ);
+                        Person person = directors[i];
+                        person.setRole("감독");
+                        mDirectorAndActor.add(person);
                     }
 
                     for (int i=0; i<actors.length; i++) {
-                        CircleImageView civ = new CircleImageView(ActivityMovieDetail.this);
-                        Glide.with(ActivityMovieDetail.this).load(actors[i].getActor().getImg()).into(civ);
-                        civ.setLayoutParams(mLayoutParams);
-                        mLayoutParams.setMargins(40,0,40,0);
-                        llDirectorandActor.addView(civ);
+                        Person person = actors[i].getActor();
+                        person.setRole(actors[i].getRole());
+                        mDirectorAndActor.add(person);
                     }
                 }
             }
@@ -261,6 +300,18 @@ public class ActivityMovieDetail extends AppCompatActivity implements View.OnCli
         });
     }
 
+    // facebook 공유
+    private void shareFacebook() {
+        if (ShareDialog.canShow(ShareLinkContent.class)) {
+            ShareLinkContent linkContent = new ShareLinkContent.Builder()
+                    .setContentTitle(mMovie.getTitle())
+                    .setContentDescription(mMovie.getStory())
+                    .setImageUrl(Uri.parse(mMovie.getStillcut()[0].getImg()))
+                    .setContentUrl(Uri.parse("http://www.fingo.com/movies/" + mMovie.getId()))
+                    .build();
+            shareDialog.show(linkContent);
+        }
+    }
 
     private void setWishButtonState() {
         String wishMovieStateToString; // 서버로 보내주기위해 wishMovieState를 String 값으로 바꿈
@@ -322,6 +373,7 @@ public class ActivityMovieDetail extends AppCompatActivity implements View.OnCli
                     break;
                 }
             case R.id.button_share:
+                shareFacebook();
                 break;
         }
     }
@@ -430,69 +482,37 @@ public class ActivityMovieDetail extends AppCompatActivity implements View.OnCli
         mBuilderComment.setPositiveButton("완료", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                if (comment == null) { // 처음 코멘트를 쓰는 경우 -> POST로 코멘트를 서버로 보냄
-                    String writtenComment = etComment.getText().toString();
+                Log.e("log", "comment not null");
 
-                    if (writtenComment.equals("")) { // 아무 내용도 입력하지 않았을 때 토스트 메세지를 띄움
-                        Toast.makeText(ActivityMovieDetail.this, "코멘트를 입력해주세요.", Toast.LENGTH_SHORT).show();
-                    } else {
-                        comment = writtenComment;
-                        Call<Void> postMovieCommentCall = AppController.getFingoService()
-                                .postMovieComment(AppController.getToken(), movieId, writtenComment); // POST
+                String writtenComment = etComment.getText().toString();
 
-                        postMovieCommentCall.enqueue(new Callback<Void>() {
-                            @Override
-                            public void onResponse(Call<Void> call, Response<Void> response) {
-                                if (response.isSuccessful()) {
-                                    Log.e("log", "response message ==== " + response.message());
+                if (writtenComment.equals("")) { // 아무 내용도 입력하지 않았을 때 토스트 메세지를 띄움
+                    Toast.makeText(ActivityMovieDetail.this, "코멘트를 입력해주세요.", Toast.LENGTH_SHORT).show();
+                } else {
+                    comment = writtenComment;
+                    Call<Void> patchMovieCommentCall = AppController.getFingoService()
+                            .patchMovieComment(AppController.getToken(), movieId, writtenComment); // POST
 
-                                    // 댓글이 써졌을 경우 코멘트 아이콘 색상 변경
-                                    btnComment.setActivated(true);
-                                    Toast.makeText(ActivityMovieDetail.this, "입력되었습니다.", Toast.LENGTH_SHORT).show();
-                                    Log.e("log", "Post 상태일 때 댓글 ==== " + btnComment.isActivated());
-                                } else {
-                                    Log.e("log", "response message ==== " + response.message());
-                                }
+                    patchMovieCommentCall.enqueue(new Callback<Void>() {
+                        @Override
+                        public void onResponse(Call<Void> call, Response<Void> response) {
+                            if (response.isSuccessful()) {
+                                Log.e("log", "response message ==== " + response.message());
+
+                                Toast.makeText(ActivityMovieDetail.this, "입력되었습니다.", Toast.LENGTH_SHORT).show();
+                                // 댓글이 써졌을 경우 코멘트 아이콘 색상 변경
+                                btnComment.setActivated(true);
+                            } else {
+                                Log.e("log", "response message ==== " + response.message());
                             }
-                            @Override
-                            public void onFailure(Call<Void> call, Throwable t) {
-                                Log.e("log", "error message ==== " + t.getMessage());
-                            }
-                        });
-                    }
-                } else if (comment != null){ // 이미 작성된 코멘트가 있을 경우 -> 코멘트 수정은 PATCH를 사용
-                    Log.e("log", "comment not null");
+                        }
 
-                    String writtenComment = etComment.getText().toString();
-
-                    if (writtenComment.equals("")) { // 아무 내용도 입력하지 않았을 때 토스트 메세지를 띄움
-                        Toast.makeText(ActivityMovieDetail.this, "2코멘트를 입력해주세요.", Toast.LENGTH_SHORT).show();
-                    } else {
-                        comment = writtenComment;
-                        Call<Void> patchMovieCommentCall = AppController.getFingoService()
-                                .patchMovieComment(AppController.getToken(), movieId, writtenComment); // POST
-
-                        patchMovieCommentCall.enqueue(new Callback<Void>() {
-                            @Override
-                            public void onResponse(Call<Void> call, Response<Void> response) {
-                                if (response.isSuccessful()) {
-                                    Log.e("log", "response message ==== " + response.message());
-
-                                    Toast.makeText(ActivityMovieDetail.this, "patch입력되었습니다.", Toast.LENGTH_SHORT).show();
-                                    // 댓글이 써졌을 경우 코멘트 아이콘 색상 변경
-                                    btnComment.setActivated(true);
-                                } else {
-                                    Log.e("log", "response message ==== " + response.message());
-                                }
-                            }
-                            @Override
-                            public void onFailure(Call<Void> call, Throwable t) {
-                                Log.e("log", "error message ==== " + t.getMessage());
-                            }
-                        });
-                    }
+                        @Override
+                        public void onFailure(Call<Void> call, Throwable t) {
+                            Log.e("log", "error message ==== " + t.getMessage());
+                        }
+                    });
                 }
-
             }
         });
         mBuilderComment.setNegativeButton("취소", new DialogInterface.OnClickListener() {
