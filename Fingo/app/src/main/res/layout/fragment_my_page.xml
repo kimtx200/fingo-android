@@ -48,7 +48,7 @@
 
                 <ImageButton
                     android:id="@+id/button_mypage_setting"
-                    style="@android:style/Widget.Material.Button.Borderless"
+                    style="@style/Base.Widget.AppCompat.Button.Borderless"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:layout_margin="5dp"
