@@ -48,7 +48,7 @@
 
                 <ImageButton
                     android:id="@+id/button_mypage_setting"
-                    style="@android:style/Widget.Material.Button.Borderless"
+                    style="@style/Base.Widget.AppCompat.Button.Borderless"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:layout_margin="5dp"
@@ -66,6 +66,15 @@
                     android:layout_margin="5dp"
                     android:scaleType="centerInside"
                     app:srcCompat="@drawable/icon_dots_white" />
+
+                <Spinner
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/spinner_cover"
+                    android:layout_below="@+id/button_mypage_setting"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true"
+                    android:spinnerMode="dialog" />
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -177,6 +186,17 @@
                             android:textColor="@color/colorWhiteBackground" />
                     </LinearLayout>
                 </LinearLayout>
+
+                <Spinner
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/spinner_profile"
+                    android:layout_centerVertical="true"
+                    android:layout_toLeftOf="@+id/button_mypage_add"
+                    android:layout_toStartOf="@+id/button_mypage_add"
+                    android:layout_marginRight="60dp"
+                    android:layout_marginEnd="60dp"
+                    android:spinnerMode="dialog" />
 
             </RelativeLayout>
 

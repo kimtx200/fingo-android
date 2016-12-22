@@ -4,7 +4,6 @@ package com.teamfingo.android.fingo.mypage;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -21,15 +20,17 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bartoszlipinski.recyclerviewheader2.RecyclerViewHeader;
 import com.bumptech.glide.Glide;
-import com.cocosw.bottomsheet.BottomSheet;
 import com.facebook.AccessToken;
 import com.facebook.AccessTokenTracker;
 import com.facebook.CallbackManager;
@@ -75,6 +76,8 @@ public class FragmentMyPage extends Fragment implements View.OnClickListener, se
     RecyclerAdapterMypageComment mAdapter;
     RecyclerViewHeader header;
     LinearLayoutManager mLayoutManager;
+
+    Spinner spProfile, spCover;
 
     // 페이스북 서비스 이용을 위한 manager 들
     // TODO 페이스북으로 가입된 유저가 아닌 경우, 추가 인증 요청 기능 구현 필요
@@ -169,6 +172,74 @@ public class FragmentMyPage extends Fragment implements View.OnClickListener, se
         // 봤어요 상세 페이지 이동 버튼
         btnWatched = (Button) view.findViewById(R.id.button_watched);
         btnWatched.setOnClickListener(this);
+
+        // Spinner component 들을 R.array.movie_sorting 으로 부터 가져와 Spinner item 에 부착
+        String[] str_profile = getResources().getStringArray(R.array.Modify_image);
+        ArrayAdapter<String> adapter1 = new ArrayAdapter<>(this.getContext(), android.R.layout.simple_spinner_dropdown_item, str_profile);
+        spProfile = (Spinner) view.findViewById(R.id.spinner_profile);
+        spProfile.setAdapter(adapter1);
+        // 2. 정렬 기준 선택 동작을 위한 spinner itemSelectListener 구현
+        spProfile.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+
+            // 2.1 스피너의 아이템이 제대로 선택 되었을 경우,
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                switch(position){
+                    case 0:
+                        takePhoto();
+                        break;
+                    case 1:
+                        getGallery();
+                        break;
+                    case 2:
+                        getFacebookImage();
+                        break;
+                    case 3:
+                        deleteImage();
+                        break;
+                }
+            }
+
+            // 2.2 스피너의 아이템이 제대로 선택 되지 않았을 경우,
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+        // Spinner component 들을 R.array.movie_sorting 으로 부터 가져와 Spinner item 에 부착
+        String[] str_cover = getResources().getStringArray(R.array.Modify_image);
+        ArrayAdapter<String> adapter2 = new ArrayAdapter<>(this.getContext(), android.R.layout.simple_spinner_dropdown_item, str_cover);
+        spCover = (Spinner) view.findViewById(R.id.spinner_cover);
+        spCover.setAdapter(adapter2);
+        // 2. 정렬 기준 선택 동작을 위한 spinner itemSelectListener 구현
+        spCover.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            // 2.1 스피너의 아이템이 제대로 선택 되었을 경우,
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+
+                switch(position){
+                    case 0:
+                        takePhoto();
+                        break;
+                    case 1:
+                        getGallery();
+                        break;
+                    case 2:
+                        getFacebookImage();
+                        break;
+                    case 3:
+                        deleteImage();
+                        break;
+                }
+            }
+
+            // 2.2 스피너의 아이템이 제대로 선택 되지 않았을 경우,
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
 
         // 코멘트, 보고싶어요, 봤어요에 대한 카운트 - Mypage 메인에서 확인가능
         tvCommentCount = (TextView) view.findViewById(R.id.textView_comment_count);
@@ -339,7 +410,7 @@ public class FragmentMyPage extends Fragment implements View.OnClickListener, se
 
             // 추가기능
             case R.id.button_mypage_add:
-                openSettingMenu(v);
+//                openSettingMenu(v);
                 break;
 
             // 프로필 이미지
@@ -347,7 +418,7 @@ public class FragmentMyPage extends Fragment implements View.OnClickListener, se
                 // 1. Runtime permission 설정
                 setRuntimePermission();
                 // 2. 프로필 이미지 세팅을 위한 Bottom Sheet 호출
-                editProfileImage(v);
+//                editProfileImage(v);
                 break;
 
             // 프로필 커버 이미지
@@ -355,7 +426,7 @@ public class FragmentMyPage extends Fragment implements View.OnClickListener, se
                 // 1. Runtime permission 설정
                 setRuntimePermission();
                 // 2. 커버 이미지 세팅을 위한 Botton Sheet 호출
-                editProfileImage(v);
+//                editProfileImage(v);
                 break;
 
             // 코멘트 디테일 프레그먼트 호출
@@ -389,28 +460,28 @@ public class FragmentMyPage extends Fragment implements View.OnClickListener, se
     // TODO 미구현 - 마이페이지 추가기능에 대한 기획이 필요
     public void openSettingMenu(View view) {
 
-        new BottomSheet.Builder(this.getActivity()).title("Settings").sheet(R.menu.item_android_bottom_menu).listener(new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                switch (which) {
-                    case R.id.menu_help:
-
-                        break;
-
-                    case R.id.menu_call:
-
-                        break;
-
-                    case R.id.menu_upload:
-
-                        break;
-
-                    case R.id.menu_share:
-
-                        break;
-                }
-            }
-        }).show();
+//        new BottomSheet.Builder(this.getActivity()).title("Settings").sheet(R.menu.item_android_bottom_menu).listener(new DialogInterface.OnClickListener() {
+//            @Override
+//            public void onClick(DialogInterface dialog, int which) {
+//                switch (which) {
+//                    case R.id.menu_help:
+//
+//                        break;
+//
+//                    case R.id.menu_call:
+//
+//                        break;
+//
+//                    case R.id.menu_upload:
+//
+//                        break;
+//
+//                    case R.id.menu_share:
+//
+//                        break;
+//                }
+//            }
+//        }).show();
     }
 
     // 프로필 또는 커버이미지 세팅을 위한 Bottom Sheet View 호출
@@ -434,35 +505,35 @@ public class FragmentMyPage extends Fragment implements View.OnClickListener, se
         }
 
         // 2. Flag 값에 맞는 Bottom Sheet 호출
-        new BottomSheet.Builder(this.getActivity())
-                .title(menuTitle)
-                .sheet(R.menu.item_profile_image)
-                .listener(new DialogInterface.OnClickListener() {
-
-                    // 2.1 이미지 변경을 위한 Bottom Sheet menu 구성
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        switch (which) {
-                            // 2.1.1 카메라로 사진 찍기
-                            case R.id.menu_takePhoto:
-                                takePhoto();
-                                break;
-                            // 2.1.2 갤러리나 외부 앨범 앱으로 부터 사진 가져오기
-                            case R.id.menu_getGallery:
-                                getGallery();
-                                break;
-                            // 2.1.3 페이스북 이미지 가져오기
-                            // TODO 페이스북 로그인 여부에 따른 기능 분기 필요
-                            case R.id.menu_facebookProfile:
-                                getFacebookImage();
-                                break;
-                            // 2.1.4 기본 이미지로 초기화
-                            case R.id.menu_delete:
-                                deleteImage();
-                                break;
-                        }
-                    }
-                }).show();
+//        new BottomSheet.Builder(this.getActivity())
+//                .title(menuTitle)
+//                .sheet(R.menu.item_profile_image)
+//                .listener(new DialogInterface.OnClickListener() {
+//
+//                    // 2.1 이미지 변경을 위한 Bottom Sheet menu 구성
+//                    @Override
+//                    public void onClick(DialogInterface dialog, int which) {
+//                        switch (which) {
+//                            // 2.1.1 카메라로 사진 찍기
+//                            case R.id.menu_takePhoto:
+//                                takePhoto();
+//                                break;
+//                            // 2.1.2 갤러리나 외부 앨범 앱으로 부터 사진 가져오기
+//                            case R.id.menu_getGallery:
+//                                getGallery();
+//                                break;
+//                            // 2.1.3 페이스북 이미지 가져오기
+//                            // TODO 페이스북 로그인 여부에 따른 기능 분기 필요
+//                            case R.id.menu_facebookProfile:
+//                                getFacebookImage();
+//                                break;
+//                            // 2.1.4 기본 이미지로 초기화
+//                            case R.id.menu_delete:
+//                                deleteImage();
+//                                break;
+//                        }
+//                    }
+//                }).show();
     }
 
     // 카메라 또는 갤러리로 부터 이미지를 전달받는 경우

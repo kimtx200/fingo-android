@@ -2,7 +2,6 @@ package com.teamfingo.android.fingo.mypage;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -18,12 +17,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.cocosw.bottomsheet.BottomSheet;
 import com.kakao.kakaolink.KakaoLink;
 import com.kakao.kakaolink.KakaoTalkLinkMessageBuilder;
 import com.kakao.util.KakaoParameterException;
 import com.teamfingo.android.fingo.R;
-import com.teamfingo.android.fingo.common.ActivityCorrectComment;
 import com.teamfingo.android.fingo.common.ActivityMovieDetail;
 import com.teamfingo.android.fingo.model.UserComments;
 import com.teamfingo.android.fingo.utils.AppController;
@@ -33,6 +30,8 @@ import java.util.ArrayList;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
+//import com.cocosw.bottomsheet.BottomSheet;
 
 /**
  *
@@ -164,50 +163,50 @@ public class RecyclerAdapterMypageComment extends RecyclerView.Adapter<RecyclerA
         final UserComments.Results comment_info = mUserComments.get(position);  // 유저의 평가 정보
 
         // 2. Bottom sheet 의 동작 구현
-        new BottomSheet.Builder(mActivity)  // 현재 Fragment 가 띄워진 Activity 위로 Bottom sheet 가 생성되도록 설정
-                .title("Comment Options")   // Bottom sheet 의 제목
-                .sheet(R.menu.item_comment_option)  // Bottom sheet layout 설정
-                .listener(new DialogInterface.OnClickListener() {
-
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        switch (which) {
-
-                            // 2.1 '수정하기' 구현
-                            case R.id.menu_correct:
-
-                                // 2.1.1 ActivityCorrectComment 호출
-                                Intent intent = new Intent(mActivity, ActivityCorrectComment.class);
-
-                                // 2.1.2 수정 페이지에서 필요한 정보들을 intent 로 넘깁니다.
-                                intent.putExtra("movie_id", movie_info.getId());        // 영화 고유 번호
-                                intent.putExtra("movie_title", movie_info.getTitle());  // 영화 제목
-                                intent.putExtra("comment_score", comment_info.getScore());  // 유저 평점
-                                intent.putExtra("comment", comment_info.getComment());  // 유저 코멘트
-
-                                mActivity.startActivity(intent);
-                                break;
-
-                            // 2.2 '삭제하기' 구현
-                            case R.id.menu_delete:
-
-                                // 2.2.1 서버로 해당 영화에 대한 코멘트 삭제 요청 - 영화 고유 번호를 삭제 요청 파라미터로 넘김
-                                deleteComment(movie_info.getId());  // 영화 고유 번호
-                                break;
-
-                            // 2.3 '공유하기' 구현
-                            case R.id.menu_share:
-                                try {
-                                    // 2.3.1 카카오톡 메세지에 영화제목과 포스터 이미지를 공유
-                                    shareToKakao(movie_info.getTitle(), movie_info.getImg());
-                                } catch (KakaoParameterException e) {
-                                    // 2.3.2 카카오톡을 연결 할 수 없을 때의 예외처리
-                                    e.printStackTrace();
-                                }
-                                break;
-                        }
-                    }
-                }).show();
+//        new BottomSheet.Builder(mActivity)  // 현재 Fragment 가 띄워진 Activity 위로 Bottom sheet 가 생성되도록 설정
+//                .title("Comment Options")   // Bottom sheet 의 제목
+//                .sheet(R.menu.item_comment_option)  // Bottom sheet layout 설정
+//                .listener(new DialogInterface.OnClickListener() {
+//
+//                    @Override
+//                    public void onClick(DialogInterface dialog, int which) {
+//                        switch (which) {
+//
+//                            // 2.1 '수정하기' 구현
+//                            case R.id.menu_correct:
+//
+//                                // 2.1.1 ActivityCorrectComment 호출
+//                                Intent intent = new Intent(mActivity, ActivityCorrectComment.class);
+//
+//                                // 2.1.2 수정 페이지에서 필요한 정보들을 intent 로 넘깁니다.
+//                                intent.putExtra("movie_id", movie_info.getId());        // 영화 고유 번호
+//                                intent.putExtra("movie_title", movie_info.getTitle());  // 영화 제목
+//                                intent.putExtra("comment_score", comment_info.getScore());  // 유저 평점
+//                                intent.putExtra("comment", comment_info.getComment());  // 유저 코멘트
+//
+//                                mActivity.startActivity(intent);
+//                                break;
+//
+//                            // 2.2 '삭제하기' 구현
+//                            case R.id.menu_delete:
+//
+//                                // 2.2.1 서버로 해당 영화에 대한 코멘트 삭제 요청 - 영화 고유 번호를 삭제 요청 파라미터로 넘김
+//                                deleteComment(movie_info.getId());  // 영화 고유 번호
+//                                break;
+//
+//                            // 2.3 '공유하기' 구현
+//                            case R.id.menu_share:
+//                                try {
+//                                    // 2.3.1 카카오톡 메세지에 영화제목과 포스터 이미지를 공유
+//                                    shareToKakao(movie_info.getTitle(), movie_info.getImg());
+//                                } catch (KakaoParameterException e) {
+//                                    // 2.3.2 카카오톡을 연결 할 수 없을 때의 예외처리
+//                                    e.printStackTrace();
+//                                }
+//                                break;
+//                        }
+//                    }
+//                }).show();
     }
 
     // 코멘트 삭제 기능 구현

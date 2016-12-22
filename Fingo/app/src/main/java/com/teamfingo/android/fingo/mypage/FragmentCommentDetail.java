@@ -17,6 +17,7 @@ import com.teamfingo.android.fingo.R;
 import com.teamfingo.android.fingo.model.UserComments;
 import com.teamfingo.android.fingo.utils.AppController;
 import com.teamfingo.android.fingo.utils.EndlessRecyclerOnScrollListener;
+import com.teamfingo.android.fingo.utils.EndlessRecyclerViewOnScrollListener;
 
 import java.util.ArrayList;
 
@@ -49,6 +50,7 @@ public class FragmentCommentDetail extends Fragment implements InterfaceFragment
 
     // Recycler view pagination 을 위한 Listener
     EndlessRecyclerOnScrollListener mEndlessRecyclerOnScrollListener;
+    EndlessRecyclerViewOnScrollListener mEndlessRecyclerViewOnScrollListener;
 
     // 정렬 종류를 선택 할 수 있는 Spinner
     Spinner mSpinner;
@@ -222,5 +224,6 @@ public class FragmentCommentDetail extends Fragment implements InterfaceFragment
         };
         // 3.2 생성 된 스크롤 리스너를 리사이클러 뷰에 부착
         mRecyclerView.addOnScrollListener(mEndlessRecyclerOnScrollListener);
+
     }
 }

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="Modify_image">
+        <item >사진 찍기</item>
+        <item >갤러리 이미지 가져오기</item>
+        <item >페이스북 이미지 가져오기</item>
+        <item >이미지 초기화</item>
+    </string-array>
+</resources>

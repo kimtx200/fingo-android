@@ -16,6 +16,7 @@ import com.teamfingo.android.fingo.R;
 import com.teamfingo.android.fingo.model.UserMovies;
 import com.teamfingo.android.fingo.utils.AppController;
 import com.teamfingo.android.fingo.utils.EndlessRecyclerOnScrollListener;
+import com.teamfingo.android.fingo.utils.EndlessRecyclerViewOnScrollListener;
 
 import java.util.ArrayList;
 
@@ -48,6 +49,7 @@ public class FragmentWatchedMovie extends Fragment implements InterfaceFragmentM
     // Recycler view pagination 을 위한 Listener
     EndlessRecyclerOnScrollListener mEndlessRecyclerOnScrollListener;
 
+    EndlessRecyclerViewOnScrollListener mEndlessRecyclerViewOnScrollListener;
     // 정렬 종류를 선택 할 수 있는 Spinner
     Spinner mSpinner;
 
@@ -204,17 +206,16 @@ public class FragmentWatchedMovie extends Fragment implements InterfaceFragmentM
         });
 
         // 3. Comment Pagination 을 위한 RecyclerView Scroll Listener 구현
-        mEndlessRecyclerOnScrollListener = new EndlessRecyclerOnScrollListener(mLayoutManager) {
-
+        mEndlessRecyclerViewOnScrollListener = new EndlessRecyclerViewOnScrollListener(mLayoutManager) {
             // 3.1 스크롤의 끝을 인식 했을 때,
             @Override
-            public void onLoadMore(int current_page) {
+            public void onLoadMore(int page, int totalItemsCount) {
                 // 3.1.1 서버로부터 다음 페이지의 데이터들을 불러온다.
                 // TODO Comment 데이터 전체가 정렬되는것이 아닌 페이지별로 재 정렬 되는 문제 발생
-                loadData(current_page, mSortType);
+                loadData(page, mSortType);
             }
         };
         // 3.2 생성 된 스크롤 리스너를 리사이클러 뷰에 부착
-        mRecyclerView.addOnScrollListener(mEndlessRecyclerOnScrollListener);
+        mRecyclerView.addOnScrollListener(mEndlessRecyclerViewOnScrollListener);
     }
 }

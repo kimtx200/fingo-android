@@ -67,7 +67,7 @@ dependencies {
     compile 'com.bartoszlipinski:recyclerviewheader2:2.0.1'
     
     // Bottom sheet library
-    compile 'com.cocosw:bottomsheet:1.+@aar'
+//    compile 'com.cocosw:bottomsheet:1.+@aar'
 
     // GraphView
     compile 'com.jjoe64:graphview:4.2.1'
